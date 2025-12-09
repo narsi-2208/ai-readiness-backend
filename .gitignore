@@ -1,0 +1,33 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.ai_env/
+.ai-env/
+.ai/
+
+# Django stuff
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables / Secrets
+.env
+.env.local
+.env.prod
+.env.dev
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
