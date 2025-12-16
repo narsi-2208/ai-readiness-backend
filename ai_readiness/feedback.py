@@ -70,8 +70,7 @@ def generate_narrative(assessment, raw_pct: float, capped_pct: float) -> str:
     b = BUCKET_TEXT.get(cat, {})
 
     narrative = (
-        f"Raw AI readiness score: {raw_pct:.2f}%. "
-        f"Client presentation (capped) score: {capped_pct:.2f}% ({cat}).\n\n"
+        f"Raw AI readiness score: {raw_pct:.2f}%.\n\n "
         f"{b.get('title', '')}\n\n"
         f"{b.get('description', '')}"
     )
