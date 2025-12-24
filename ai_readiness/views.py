@@ -9,6 +9,12 @@ from .pdf_report import generate_pdf_report
 import os
 import io
 from django.conf import settings
+# from ai_readiness.validation.consistency_engine import run_consistency_checks
+from .utils.answers_extractor import extract_question_scores
+from .validations_observations.consistency_engine import run_consistency_engine_v2
+from .validations_observations.observation_adapter import adapt_observations_for_llm
+from ai_readiness.llm.service import generate_llm_suggestions
+
 
 
 class QuestionsView(APIView):
@@ -21,9 +27,53 @@ class SubmitAssessmentView(APIView):
         serializer = AssessmentCreateSerializer(data=request.data)
         if serializer.is_valid():
             assessment = serializer.save()
-            out = AssessmentDetailSerializer(assessment)
-            return Response(out.data, status=status.HTTP_201_CREATED)
+            scores = extract_question_scores(assessment)
+
+# 2. Run rule-based contradiction checks
+            observations = run_consistency_engine_v2(scores)
+
+# 3. Prepare LLM-safe observation signals
+            llm_observations = adapt_observations_for_llm(observations)
+            response_data = AssessmentDetailSerializer(assessment).data
+            response_data["observations"] = llm_observations
+            
+            
+            try:
+                llm_suggestions = generate_llm_suggestions(
+                    assessment,
+                    scores,
+                    observations
+                )
+                response_data["ai_suggestions"] = llm_suggestions
+            except Exception :
+                response_data["ai_suggestions"] = None
+                
+
+# 4. Build LLM context
+            # llm_context = {
+            #     "overall_score": float(assessment.capped_score),
+            #     "category": assessment.category,
+            #     "question_scores": scores,
+            #     "observed_risks": llm_observations,
+            #     "industry": assessment.industry,
+            #     "prioritized_use_case": assessment.prioritized_use_case
+# }
+            # answers = {
+            #     ans.question_id: ans.numeric_value
+            #     for ans in assessment.answers.all()
+            #     if ans.numeric_value is not None
+            # }
+            # observations = run_consistency_checks(answers)
+            # out = AssessmentDetailSerializer(assessment)
+            
+            # observations = run_consistency_checks(answers)
+            # response_data = out.data
+            # response_data["observations"] = observations
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class AssessmentDetailView(generics.RetrieveAPIView):
