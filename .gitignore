@@ -6,9 +6,11 @@ __pycache__/
 # Virtual environments
 venv/
 env/
+.env/
 .ai_env/
 .ai-env/
 .ai/
+pdf/    
 
 # Django stuff
 db.sqlite3
