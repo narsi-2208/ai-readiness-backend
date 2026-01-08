@@ -1,3 +1,6 @@
+import os
+import io
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -6,26 +9,54 @@ from .questions_config import QUESTIONS
 from .serializers import AssessmentCreateSerializer, AssessmentDetailSerializer
 from .models import Assessment
 from .pdf_report import generate_pdf_report
-import os
-import io
-from django.conf import settings
+from .emails import send_assessment_emails
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionsView(APIView):
     def get(self, request):
         return Response({"questions": QUESTIONS})
     
+# class SubmitAssessmentView(APIView):
+#     def post(self, request):
+#         serializer = AssessmentCreateSerializer(data=request.data)
+#         if serializer.is_valid():
+#             assessment = serializer.save()
+#             out = AssessmentDetailSerializer(assessment)
+#             return Response(out.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
 class SubmitAssessmentView(APIView):
     def post(self, request):
         serializer = AssessmentCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            assessment = serializer.save()
-            out = AssessmentDetailSerializer(assessment)
-            return Response(out.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
+
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 1️⃣ Save assessment
+        assessment = serializer.save()
+
+        # 2️⃣ Send emails (NON-BLOCKING)
+        try:
+            send_assessment_emails(assessment)
+        except Exception as e:
+            # Never fail assessment submission due to email
+            logger.exception(
+                f"Email sending failed for assessment {assessment.id}: {str(e)}"
+            )
+
+        # 3️⃣ Return response
+        out = AssessmentDetailSerializer(assessment)
+        return Response(out.data, status=status.HTTP_201_CREATED)
+
+
 class AssessmentDetailView(generics.RetrieveAPIView):
     queryset = Assessment.objects.all()
     serializer_class = AssessmentDetailSerializer
