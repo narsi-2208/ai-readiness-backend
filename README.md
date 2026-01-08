@@ -167,10 +167,9 @@ http://127.0.0.1:8000/
 - Each question maps to a maturity dimension
 - Weighted scoring model
 - Final readiness level:
-  - Beginner
-  - Intermediate
-  - Advanced
-  - AI-Driven
+  - AI Aspirant
+  - AI Explorer
+  - AI Adopter
 
 Logic implemented in:
 ```
@@ -193,14 +192,9 @@ ai_readiness/pdf_report.py
 
 ---
 
-## 📧 Email Delivery Options
+## 📧 Email Delivery 
 
-### Option 1: SMTP (App Password)
-- Simple
-- Suitable for low volume
-- Uses Outlook / Office365 SMTP
-
-### Option 2: Microsoft Graph API (Recommended)
+### Microsoft Graph API 
 - Secure OAuth2
 - Enterprise-grade
 - No password usage
