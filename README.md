@@ -102,13 +102,6 @@ DEBUG=True
 SECRET_KEY=your-secret-key
 ALLOWED_HOSTS=*
 
-# Email (SMTP)
-EMAIL_HOST=smtp.office365.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=assist@yourdomain.com
-EMAIL_HOST_PASSWORD=your-app-password
-
 # Microsoft Graph
 TENANT_ID=xxxx
 CLIENT_ID=xxxx
